@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>سبحة إلكترونية</title>
+    <link rel="stylesheet" href="style.css">
+    <!-- Add manifest link here later -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#1e3c72"/>
+</head>
+<body>
+<div class="container main-page">
+    <h1>سبحة إلكترونية 📿</h1>
+    <div class="add-dhikr">
+        <input type="text" id="dhikrName" placeholder="أدخل الذكر">
+        <input type="number" id="dhikrCount" placeholder="عدد المرات" min="1" value="1">
+        <button onclick="addDhikr()">إضافة ذكر</button>
+    </div>
+    <div class="dhikr-list" id="dhikrList"></div>
+
+    <!-- Sound button -->
+    <button class="sound-btn" onclick="toggleSound()">🔊</button>
+</div>
+
+<div class="counter-page" id="counterPage">
+    <div style="margin: 0; line-height: 1; display: flex; align-items: center; gap: 10px;">
+        <div style="display: block; margin: 0;">عـــــطـــــر فـــــمـــك بـــــذكـــــــر الـــلـــــه .. العدد = </div>
+        <div id="targetCount" style="font-weight: bold;">0</div>
+    </div>
+    <h1 id="currentDhikrName"></h1>
+    <div class="counter-display" onclick="handleCounterClick()">
+        <div class="count">
+            <div id="currentCount" style="display: inline;">0</div>
+        </div>
+    </div>
+    <div class="counter-footer">
+        <div class="nav-buttons">
+            <button class="nav-btn" onclick="navigateDhikr(1)">→</button>
+            <button class="reset-btn" onclick="resetCounter()">تصفير</button>
+            <button class="back-btn" onclick="showMainPage()">الرجوع</button>
+            <button class="nav-btn" onclick="navigateDhikr(-1)">←</button>
+        </div>
+    </div>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
