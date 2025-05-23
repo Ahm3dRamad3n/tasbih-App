@@ -1,12 +1,12 @@
-const CACHE_NAME = 'tasbih-cache-v1';
+const CACHE_NAME = 'tasbih-cache-v2'; // Increment cache version
 const urlsToCache = [
-  '/',
-  '/index.html',
-  '/style.css',
-  '/script.js',
-  '/manifest.json',
-  '/icons/icon-192x192.png',
-  '/icons/icon-512x512.png'
+  './',
+  './index.html',
+  './style.css',
+  './script.js',
+  './manifest.json',
+  './icons/icon-192x192.png',
+  './icons/icon-512x512.png'
 ];
 
 // Install event: Cache the app shell
@@ -16,9 +16,16 @@ self.addEventListener('install', event => {
     caches.open(CACHE_NAME)
       .then(cache => {
         console.log('Service Worker: Caching app shell');
-        return cache.addAll(urlsToCache);
+        // Use { cache: 'reload' } to bypass HTTP cache when fetching during install
+        const cachePromises = urlsToCache.map(urlToCache => {
+            return cache.add(new Request(urlToCache, {cache: 'reload'}));
+        });
+        return Promise.all(cachePromises);
       })
       .then(() => self.skipWaiting()) // Activate worker immediately
+      .catch(error => {
+          console.error('Service Worker: Failed to cache app shell:', error);
+      })
   );
 });
 
@@ -39,62 +46,42 @@ self.addEventListener('activate', event => {
   );
 });
 
-// Fetch event: Serve from cache or network
+// Fetch event: Serve from cache or network (Cache-first strategy)
 self.addEventListener('fetch', event => {
-  console.log('Service Worker: Fetching', event.request.url);
-  // For navigation requests, use network-first strategy to ensure latest HTML
-  if (event.request.mode === 'navigate') {
-    event.respondWith(
-      fetch(event.request)
-        .then(response => {
-          // Check if we received a valid response
-          if (!response || response.status !== 200 || response.type !== 'basic') {
-            return response;
-          }
-          // Clone the response because it's a stream and can only be consumed once
-          const responseToCache = response.clone();
-          caches.open(CACHE_NAME)
-            .then(cache => {
-              cache.put(event.request, responseToCache);
-            });
+  event.respondWith(
+    caches.match(event.request)
+      .then(response => {
+        // Cache hit - return response
+        if (response) {
           return response;
-        })
-        .catch(() => {
-          // Network failed, try to serve from cache
-          return caches.match(event.request)
-            .then(response => {
-              // If request is in cache, return it, otherwise return offline page or default
-              return response || caches.match('/index.html'); // Fallback to cached index.html
-            });
-        })
-    );
-  } else {
-    // For non-navigation requests (CSS, JS, images), use cache-first strategy
-    event.respondWith(
-      caches.match(event.request)
-        .then(response => {
-          // Cache hit - return response
-          if (response) {
-            return response;
-          }
-          // Not in cache - fetch from network
-          return fetch(event.request).then(
-            response => {
-              // Check if we received a valid response
-              if (!response || response.status !== 200 || response.type !== 'basic') {
-                return response;
-              }
-              // Clone the response
-              const responseToCache = response.clone();
-              caches.open(CACHE_NAME)
-                .then(cache => {
-                  cache.put(event.request, responseToCache);
-                });
-              return response;
+        }
+
+        // Not in cache - fetch from network
+        return fetch(event.request).then(
+          networkResponse => {
+            // Check if we received a valid response
+            if (!networkResponse || networkResponse.status !== 200 || networkResponse.type !== 'basic') {
+              return networkResponse;
             }
-          );
-        })
-    );
-  }
+
+            // Clone the response
+            const responseToCache = networkResponse.clone();
+
+            caches.open(CACHE_NAME)
+              .then(cache => {
+                cache.put(event.request, responseToCache);
+              });
+
+            return networkResponse;
+          }
+        ).catch(error => {
+            console.error('Service Worker: Fetch failed:', error);
+            // Fallback for navigation requests if fetch fails
+            if (event.request.mode === 'navigate') {
+                return caches.match('./index.html');
+            }
+        });
+      })
+  );
 });
 
