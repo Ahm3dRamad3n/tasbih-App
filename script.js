@@ -56,7 +56,6 @@ function toggleSound() {
     isSoundEnabled = !isSoundEnabled;
     document.querySelector('.sound-btn').textContent = isSoundEnabled ? '🔊' : '🔇';
     saveToLocalStorage();
-    // Initialize AudioContext on user interaction if not already done
     if (isSoundEnabled && !audioContext) {
         try {
             audioContext = new (window.AudioContext || window.webkitAudioContext)();
@@ -72,7 +71,7 @@ function addDhikr() {
     const newDhikr = {
         id: Date.now(),
         name: nameInput.value.trim(),
-        target: parseInt(countInput.value) || 33, // Default to 33 if not specified or invalid
+        target: parseInt(countInput.value) || 33, 
         current: 0
     };
 
@@ -106,9 +105,6 @@ function editDhikr(id) {
     const newTarget = parseInt(newTargetStr);
     if (newTargetStr !== null && !isNaN(newTarget) && newTarget > 0) {
         item.target = newTarget;
-        // Reset count if target is changed and current count exceeds new target?
-        // Or just update target? Let's just update target.
-        // if (item.current > item.target) item.current = 0; // Optional reset
     }
 
     saveToLocalStorage();
@@ -128,7 +124,6 @@ function showCounterPage(id) {
     document.querySelector('.counter-page').style.display = 'flex';
     document.getElementById('currentDhikrName').textContent = currentDhikr.name;
     updateCounterDisplay();
-    // Ensure sound button state is correct when switching pages
     document.querySelector('.sound-btn').textContent = isSoundEnabled ? '🔊' : '🔇';
 }
 
@@ -136,7 +131,6 @@ function handleCounterClick() {
     incrementCounter();
     const counterDisplay = document.querySelector('.counter-display');
     counterDisplay.classList.add('flash');
-    // Use animationend event for more reliable removal
     counterDisplay.addEventListener('animationend', () => {
         counterDisplay.classList.remove('flash');
     }, { once: true });
@@ -146,7 +140,7 @@ function incrementCounter() {
     if (currentDhikr) {
         currentDhikr.current++;
         if (currentDhikr.current > currentDhikr.target) {
-            currentDhikr.current = 0; // Reset to 0 after reaching target
+            currentDhikr.current = 0;
         }
         playBeep();
         updateCounterDisplay();
@@ -167,7 +161,6 @@ function updateCounterDisplay() {
         document.getElementById('currentCount').textContent = currentDhikr.current;
         document.getElementById('targetCount').textContent = currentDhikr.target;
     } else {
-        // Handle case where no dhikr is selected (e.g., list is empty)
         document.getElementById('currentCount').textContent = '0';
         document.getElementById('targetCount').textContent = '0';
         document.getElementById('currentDhikrName').textContent = 'لا يوجد ذكر محدد';
@@ -178,7 +171,6 @@ function deleteDhikr(id) {
     const itemIndex = dhikrList.findIndex(item => item.id === id);
     if (itemIndex === -1) return;
 
-    // Ask for confirmation before deleting
     if (!confirm(`هل أنت متأكد من حذف الذكر: "${dhikrList[itemIndex].name}"؟`)) {
         return;
     }
@@ -187,24 +179,22 @@ function deleteDhikr(id) {
     saveToLocalStorage();
     renderDhikrList();
 
-    // If the deleted item was the current one, handle appropriately
     if (currentDhikr && currentDhikr.id === id) {
         currentDhikr = null;
-        // Optionally, switch to the main page or select the next/previous dhikr
-        showMainPage(); // Go back to main page after deleting current dhikr
+        showMainPage();
     }
 }
 
 function showMainPage() {
     document.querySelector('.main-page').style.display = 'block';
     document.querySelector('.counter-page').style.display = 'none';
-    currentDhikr = null; // Reset current dhikr when going back
-    renderDhikrList(); // Re-render list in case something changed
+    currentDhikr = null; 
+    renderDhikrList();
 }
 
 function renderDhikrList() {
     const listContainer = document.getElementById('dhikrList');
-    listContainer.innerHTML = ''; // Clear previous list
+    listContainer.innerHTML = ''; 
     if (dhikrList.length === 0) {
         listContainer.innerHTML = '<p style="text-align: center; color: #ccc;">لم تقم بإضافة أي أذكار بعد. استخدم النموذج أعلاه للإضافة.</p>';
         return;
@@ -212,10 +202,8 @@ function renderDhikrList() {
     dhikrList.forEach(dhikr => {
         const dhikrElement = document.createElement('div');
         dhikrElement.className = 'dhikr-item';
-        // Use data-id attribute for easier selection if needed
         dhikrElement.setAttribute('data-id', dhikr.id);
 
-        // Create elements programmatically for better security and control
         const nameDiv = document.createElement('div');
         nameDiv.className = 'dhikr-name';
         nameDiv.textContent = `${dhikr.name} (${dhikr.target} مرة)`;
@@ -228,7 +216,7 @@ function renderDhikrList() {
         editButton.className = 'edit-btn';
         editButton.textContent = 'تعديل';
         editButton.onclick = (event) => {
-            event.stopPropagation(); // Prevent triggering showCounterPage
+            event.stopPropagation(); 
             editDhikr(dhikr.id);
         };
 
@@ -236,7 +224,7 @@ function renderDhikrList() {
         deleteButton.className = 'delete-btn';
         deleteButton.textContent = 'حذف';
         deleteButton.onclick = (event) => {
-            event.stopPropagation(); // Prevent triggering showCounterPage
+            event.stopPropagation(); 
             deleteDhikr(dhikr.id);
         };
 
@@ -250,24 +238,6 @@ function renderDhikrList() {
     });
 }
 
-// Fullscreen functionality (removed as it's less common/useful for PWAs and might cause issues)
-/*
-function toggleFullScreen() {
-    if (!document.fullscreenElement) {
-        document.documentElement.requestFullscreen().catch(err => {
-            alert(`Error attempting to enable full-screen mode: ${err.message} (${err.name})`);
-        });
-    } else {
-        if (document.exitFullscreen) {
-            document.exitFullscreen();
-        }
-    }
-}
-document.addEventListener('fullscreenchange', () => {
-    // Optional: Add class to body or handle UI changes
-});
-*/
-
 // Initialize the app
 window.onload = () => {
     renderDhikrList();
@@ -276,7 +246,7 @@ window.onload = () => {
 
     // Register service worker
     if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('sw.js') // Changed path to root
+        navigator.serviceWorker.register('sw.js') 
             .then(registration => {
                 console.log('Service Worker registered with scope:', registration.scope);
             }).catch(error => {
