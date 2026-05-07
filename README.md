@@ -19,7 +19,7 @@ A lightweight, fast, and installable **Progressive Web App (PWA)** designed for 
 | ![HTML5](https://img.shields.io/badge/html5-%23E34F26.svg?style=for-the-badge&logo=html5&logoColor=white) | Page structure and semantics |
 | ![CSS3](https://img.shields.io/badge/css3-%231572B6.svg?style=for-the-badge&logo=css3&logoColor=white) | Styling and responsive design |
 | ![JavaScript](https://img.shields.io/badge/javascript-%23F7DF1E.svg?style=for-the-badge&logo=javascript&logoColor=black) | Core application logic (Vanilla JS) |
-| **PWA** | `manifest.json` and Service Workers for native-like experience |
+| ![PWA](https://img.shields.io/badge/PWA-5A0FC8?style=for-the-badge&logo=pwa&logoColor=white) | `manifest.json` and Service Workers for native-like experience |
 
 ---
 
